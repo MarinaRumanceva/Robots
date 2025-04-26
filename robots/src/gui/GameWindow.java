@@ -1,21 +1,20 @@
 package gui;
 
 import java.awt.BorderLayout;
-
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-
 import java.util.Map;
 
-public class GameWindow extends JInternalFrame implements Stateful
-{
-    private final GameVisualizer m_visualizer;
-    public GameWindow() 
-    {
+public class GameWindow extends JInternalFrame implements Stateful {
+    private final RobotView view;
+
+    public GameWindow(RobotModel model) {
         super("Игровое поле", true, true, true, true);
-        m_visualizer = new GameVisualizer();
+        this.view = new RobotView(model);
+        new RobotController(model, view);
+
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(m_visualizer, BorderLayout.CENTER);
+        panel.add(view, BorderLayout.CENTER);
         getContentPane().add(panel);
         pack();
     }

@@ -26,6 +26,7 @@ import log.Logger;
 
 public class MainApplicationFrame extends JFrame {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final RobotModel robotModel = new RobotModel();
 
     public MainApplicationFrame() {
         int inset = 50;
@@ -33,24 +34,26 @@ public class MainApplicationFrame extends JFrame {
         setBounds(inset, inset,
                 screenSize.width - inset * 2,
                 screenSize.height - inset * 2);
-
         setContentPane(desktopPane);
 
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
+        GameWindow gameWindow = new GameWindow(robotModel);
         gameWindow.setSize(400, 400);
         addWindow(gameWindow);
 
+        RobotCoordinatesWindow coordWindow = new RobotCoordinatesWindow(robotModel);
+        coordWindow.setSize(200, 100);
+        addWindow(coordWindow);
+
         setJMenuBar(generateMenuBar());
 
-        // Восстановление состояния
         Map<String, String> state = ApplicationState.loadState();
         logWindow.restoreState(state);
         gameWindow.restoreState(state);
+        coordWindow.restoreState(state);
 
-        // Восстановление состояния главного окна
         if (state.containsKey("main.maximized")) {
             if (Boolean.parseBoolean(state.get("main.maximized"))) {
                 setExtendedState(MAXIMIZED_BOTH);
@@ -121,14 +124,12 @@ public class MainApplicationFrame extends JFrame {
     private void saveApplicationState() {
         Map<String, String> state = new HashMap<>();
 
-        // Сохраняем состояние внутренних окон
         for (JInternalFrame frame : desktopPane.getAllFrames()) {
             if (frame instanceof Stateful) {
                 ((Stateful) frame).saveState(state);
             }
         }
 
-        // Сохраняем состояние главного окна
         state.put("main.maximized", Boolean.toString((getExtendedState() & MAXIMIZED_BOTH) == MAXIMIZED_BOTH));
 
         ApplicationState.saveState(state);
