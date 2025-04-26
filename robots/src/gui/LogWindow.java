@@ -11,7 +11,9 @@ import log.LogChangeListener;
 import log.LogEntry;
 import log.LogWindowSource;
 
-public class LogWindow extends JInternalFrame implements LogChangeListener
+import java.util.Map;
+
+public class LogWindow extends JInternalFrame implements LogChangeListener, Stateful
 {
     private LogWindowSource m_logSource;
     private TextArea m_logContent;
@@ -46,5 +48,31 @@ public class LogWindow extends JInternalFrame implements LogChangeListener
     public void onLogChanged()
     {
         EventQueue.invokeLater(this::updateLogContent);
+    }
+
+    @Override
+    public void saveState(Map<String, String> state) {
+        PrefixedStateMap logState = new PrefixedStateMap(state, "log.");
+        logState.put("x", Integer.toString(getX()));
+        logState.put("y", Integer.toString(getY()));
+        logState.put("width", Integer.toString(getWidth()));
+        logState.put("height", Integer.toString(getHeight()));
+        logState.put("isMaximized", Boolean.toString(isMaximum()));
+    }
+
+    @Override
+    public void restoreState(Map<String, String> state) {
+        PrefixedStateMap logState = new PrefixedStateMap(state, "log.");
+        if (!logState.isEmpty()) {
+            setBounds(
+                    Integer.parseInt(logState.getOrDefault("x", "10")),
+                    Integer.parseInt(logState.getOrDefault("y", "10")),
+                    Integer.parseInt(logState.getOrDefault("width", "300")),
+                    Integer.parseInt(logState.getOrDefault("height", "800"))
+            );
+            try {
+                setMaximum(Boolean.parseBoolean(logState.get("isMaximized")));
+            } catch (Exception ignored) {}
+        }
     }
 }
